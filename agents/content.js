@@ -15,7 +15,7 @@ async function runContentAgent() {
 Business: ${lead.name}, ${lead.city}, ${lead.country}. Category: ${lead.category}. Rating: ${lead.rating}★.
 Write a WhatsApp outreach message in Albanian that: references their specific business, explains the AI agent in 1 sentence, offers 30-day free trial, ends with +355 68 317 7201. Max 4 sentences. Warm, genuine.`;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://outreach-ai-agent-production.up.railway.app/api/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01' },
       body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:250, messages:[{role:'user',content:prompt}] })

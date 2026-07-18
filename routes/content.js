@@ -23,7 +23,7 @@ router.post('/generate', async (req, res, next) => {
     const prompt = buildPrompt({ country, contentType, category, language, businessName, city, rating });
 
     // Call Claude — API key from Railway env vars, never from client
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://outreach-ai-agent-production.up.railway.app/api/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ Write a WhatsApp outreach message in ${lead.language || 'Albanian'} that:
 - Warm, genuine, not salesy
 - If Albanian, use proper ë and ç characters`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://outreach-ai-agent-production.up.railway.app/api/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
