@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>OutreachAI — Agent Platform</title>
+<style>
+:root{
+  --bg:#07080F;
+  --surface:#0F1018;
+  --card:#151621;
+  --card2:#1C1E2D;
+  --border:#252738;
+  --teal:#00C2A8;
+  --teal-dim:#00896E;
+  --gold:#F5A623;
+  --red:#E8394A;
+  --green:#25D366;
+  --purple:#7C63FF;
+  --white:#FFFFFF;
+  --grey:#8888AA;
+  --lgrey:#555570;
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --r:12px;
+  --r-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--white);font-family:var(--font);font-size:14px;min-height:100vh;display:flex;flex-direction:column}
+/* ── LAYOUT ── */
+.shell{display:flex;flex:1;height:100vh;overflow:hidden}
+.sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+/* ── SIDEBAR ── */
+.brand{padding:20px 16px 12px;border-bottom:1px solid var(--border)}
+.brand h1{font-size:17px;font-weight:700;color:var(--white);letter-spacing:-.3px}
+.brand span{color:var(--teal);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.user-card{margin:12px;padding:10px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer}
+.user-card .name{font-weight:600;font-size:13px}
+.user-card .plan{font-size:11px;color:var(--teal);margin-top:2px}
+.nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--lgrey);text-transform:uppercase;padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--grey);font-size:13px;border-left:2px solid transparent;transition:.15s}
+.nav-item:hover{color:var(--white);background:var(--card)}
+.nav-item.active{color:var(--white);border-left-color:var(--teal);background:rgba(0,194,168,.06)}
+.nav-item .icon{width:16px;text-align:center;font-size:14px}
+.nav-item .badge{margin-left:auto;background:var(--teal);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border)}
+.status-dot{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── TOPBAR ── */
+.topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0}
+.topbar h2{font-size:16px;font-weight:700;flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--teal);color:#000}
+.btn-primary:hover{background:#00A892}
+.btn-ghost{background:transparent;color:var(--grey);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--white);border-color:var(--grey)}
+.btn-red{background:rgba(232,57,74,.15);color:var(--red);border:1px solid rgba(232,57,74,.3)}
+.btn-green{background:rgba(37,211,102,.12);color:var(--green);border:1px solid rgba(37,211,102,.25)}
+/* ── CONTENT PANELS ── */
+.panel{padding:24px;display:none;flex-direction:column;gap:20px}
+.panel.active{display:flex}
+/* ── COUNTRY SELECTOR ── */
+.country-search-wrap{display:flex;gap:10px;align-items:center}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:0 12px}
+.search-box input{background:none;border:none;color:var(--white);font-size:14px;padding:10px 0;flex:1;outline:none}
+.search-box input::placeholder{color:var(--lgrey)}
+.country-tags{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0}
+.ctag{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:5px 10px 5px 12px;font-size:12px;font-weight:600}
+.ctag .flag{font-size:16px}
+.ctag button{background:none;border:none;color:var(--lgrey);cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+.ctag button:hover{color:var(--red)}
+.ctag.active{border-color:var(--teal);background:rgba(0,194,168,.08);color:var(--teal)}
+/* ── GRID ── */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--grey)}
+.metric-big{font-size:36px;font-weight:800;letter-spacing:-1px}
+.metric-sub{font-size:12px;color:var(--grey);margin-top:2px}
+.delta{font-size:11px;font-weight:700;margin-top:6px}
+.delta.up{color:var(--teal)}
+.delta.down{color:var(--red)}
+/* ── AGENT CARDS ── */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.agent-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.agent-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.agent-card.research::before{background:var(--teal)}
+.agent-card.content::before{background:var(--purple)}
+.agent-card.outreach::before{background:var(--gold)}
+.agent-card.publisher::before{background:var(--green)}
+.agent-card.crm::before{background:var(--red)}
+.agent-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.agent-card.research .agent-icon{background:rgba(0,194,168,.12)}
+.agent-card.content .agent-icon{background:rgba(124,99,255,.12)}
+.agent-card.outreach .agent-icon{background:rgba(245,166,35,.12)}
+.agent-card.publisher .agent-icon{background:rgba(37,211,102,.12)}
+.agent-card.crm .agent-icon{background:rgba(232,57,74,.12)}
+.agent-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.agent-desc{font-size:12px;color:var(--grey);line-height:1.5;margin-bottom:14px}
+.agent-stats{display:flex;gap:16px;margin-bottom:14px}
+.astat{text-align:center}
+.astat-n{font-size:18px;font-weight:800}
+.astat-l{font-size:10px;color:var(--grey);margin-top:2px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.2s}
+.toggle input:checked+.toggle-track{background:var(--teal)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked~.toggle-thumb{left:21px}
+.running{font-size:11px;font-weight:700}
+.running.on{color:var(--teal)}
+.running.off{color:var(--lgrey)}
+/* ── LEADS TABLE ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.table-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);gap:12px}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--grey);background:var(--surface);border-bottom:1px solid var(--border)}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.status-pill.new{background:rgba(0,194,168,.1);color:var(--teal)}
+.status-pill.contacted{background:rgba(245,166,35,.1);color:var(--gold)}
+.status-pill.interested{background:rgba(37,211,102,.1);color:var(--green)}
+.status-pill.trial{background:rgba(124,99,255,.1);color:var(--purple)}
+.status-pill.paying{background:rgba(0,194,168,.2);color:var(--teal);border:1px solid var(--teal)}
+.status-pill.not_now{background:rgba(255,255,255,.05);color:var(--lgrey)}
+.flag-sm{font-size:16px}
+.score-bar{display:flex;align-items:center;gap:8px}
+.score-track{flex:1;height:4px;background:var(--border);border-radius:2px}
+.score-fill{height:100%;border-radius:2px;background:var(--teal)}
+.action-btns{display:flex;gap:6px}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--grey);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:.15s}
+.icon-btn:hover{color:var(--white);border-color:var(--grey)}
+/* ── APPROVAL QUEUE ── */
+.queue-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;gap:14px}
+.queue-avatar{width:40px;height:40px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.queue-body{flex:1;min-width:0}
+.queue-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.queue-name{font-weight:700;font-size:14px}
+.queue-city{font-size:11px;color:var(--grey)}
+.queue-msg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--grey);line-height:1.6;margin-bottom:10px;font-style:italic}
+.queue-actions{display:flex;gap:8px}
+/* ── REPORT ── */
+.report-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;font-family:var(--mono);font-size:12px;line-height:1.9;color:var(--grey)}
+.report-box .hl{color:var(--white);font-weight:700}
+.report-box .teal{color:var(--teal)}
+.report-box .green{color:var(--green)}
+.report-box .red{color:var(--red)}
+.report-box .gold{color:var(--gold)}
+/* ── SETUP WIZARD ── */
+.wizard-steps{display:flex;gap:0;margin-bottom:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:4px}
+.wstep{flex:1;padding:8px;text-align:center;border-radius:8px;font-size:12px;font-weight:600;color:var(--grey);cursor:pointer;transition:.15s}
+.wstep.done{color:var(--teal)}
+.wstep.active{background:var(--teal);color:#000}
+.setup-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:700;color:var(--grey);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.6px}
+.form-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;color:var(--white);font-size:13px;outline:none;transition:.15s;font-family:var(--font)}
+.form-input:focus{border-color:var(--teal)}
+.form-input::placeholder{color:var(--lgrey)}
+select.form-input option{background:var(--card)}
+.check-list{display:flex;flex-direction:column;gap:10px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border)}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--teal);margin-top:1px;cursor:pointer}
+.check-item-body{flex:1}
+.check-item-body strong{font-size:13px}
+.check-item-body p{font-size:11px;color:var(--grey);margin-top:2px}
+/* ── USERS ── */
+.user-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.user-row:last-child{border-bottom:none}
+.user-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.user-info{flex:1}
+.user-info .uname{font-weight:700;font-size:13px}
+.user-info .uemail{font-size:11px;color:var(--grey)}
+.plan-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
+.plan-tag.starter{background:rgba(0,194,168,.1);color:var(--teal)}
+.plan-tag.growth{background:rgba(245,166,35,.1);color:var(--gold)}
+.plan-tag.pro{background:rgba(124,99,255,.1);color:var(--purple)}
+/* ── PIPELINE ── */
+.pipeline{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px}
+.pipe-col{flex-shrink:0;width:220px}
+.pipe-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--grey);padding:8px 4px;display:flex;align-items:center;justify-content:space-between}
+.pipe-count{background:var(--border);padding:1px 7px;border-radius:10px;font-size:10px;color:var(--grey)}
+.pipe-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;cursor:pointer;transition:.15s}
+.pipe-card:hover{border-color:var(--teal);transform:translateY(-1px)}
+.pipe-biz{font-weight:600;font-size:13px;margin-bottom:4px}
+.pipe-meta{font-size:11px;color:var(--grey)}
+.pipe-val{font-size:11px;font-weight:700;color:var(--teal);margin-top:6px}
+/* ── MINI CHART ── */
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:40px}
+.spark-bar{flex:1;background:rgba(0,194,168,.3);border-radius:2px;min-width:4px;transition:.3s}
+.spark-bar:last-child{background:var(--teal)}
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:4px;width:fit-content}
+.tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;color:var(--grey);cursor:pointer;transition:.15s}
+.tab.active{background:var(--teal);color:#000}
+/* ── LIVE LOG ── */
+.log-stream{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:11px;max-height:200px;overflow-y:auto}
+.log-line{padding:2px 0;color:var(--grey);line-height:1.6}
+.log-line .ts{color:var(--lgrey)}
+.log-line .teal{color:var(--teal)}
+.log-line .green{color:var(--green)}
+.log-line .red{color:var(--red)}
+.log-line .gold{color:var(--gold)}
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--lgrey)}
+.empty .e-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty p{font-size:13px;line-height:1.6}
+/* ── TOOLTIP ── */
+.tip{position:relative;cursor:help}
+.tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#222;color:#fff;font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:.15s;z-index:99}
+.tip:hover::after{opacity:1}
+/* ── NOTIFICATION DOT ── */
+.notif{width:8px;height:8px;background:var(--red);border-radius:50%;margin-left:4px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="brand">
+    <h1>OutreachAI</h1>
+    <span>Agent Platform</span>
+  </div>
+  <div class="user-card" onclick="showPanel('users')">
+    <div class="name">Muzafar Jatoi</div>
+    <div class="plan">⭐ Pro Plan — Admin</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showPanel('dashboard')">
+      <span class="icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showPanel('agents')">
+      <span class="icon">🤖</span> Agents
+      <span class="badge">5</span>
+    </div>
+    <div class="nav-label">Operations</div>
+    <div class="nav-item" onclick="showPanel('countries')">
+      <span class="icon">🌍</span> Countries
+    </div>
+    <div class="nav-item" onclick="showPanel('leads')">
+      <span class="icon">🎯</span> Leads
+      <span class="badge">247</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('pipeline')">
+      <span class="icon">🔀</span> Pipeline
+    </div>
+    <div class="nav-item" onclick="showPanel('queue')">
+      <span class="icon">✉️</span> Approval Queue
+      <span class="badge">12</span>
+    </div>
+    <div class="nav-label">Publishing</div>
+    <div class="nav-item" onclick="showPanel('content')">
+      <span class="icon">📝</span> Content
+    </div>
+    <div class="nav-item" onclick="showPanel('report')">
+      <span class="icon">📋</span> Daily Report
+    </div>
+    <div class="nav-label">Admin</div>
+    <div class="nav-item" onclick="showPanel('users')">
+      <span class="icon">👥</span> Users
+    </div>
+    <div class="nav-item" onclick="showPanel('setup')">
+      <span class="icon">⚙️</span> Setup
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="status-dot"></span>
+    <span style="font-size:12px;color:var(--grey)">All agents running</span>
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+
+<!-- ─── DASHBOARD ─── -->
+<div id="panel-dashboard" class="panel active">
+  <div class="topbar" style="padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+    <h2>Dashboard</h2>
+    <div id="active-countries" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <button class="btn btn-primary" onclick="showPanel('countries')">+ Add Country</button>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+
+    <!-- KPI STRIP -->
+    <div class="grid-3" style="grid-template-columns:repeat(5,1fr)">
+      <div class="card">
+        <div class="card-label">Leads Found</div>
+        <div class="metric-big teal" style="color:var(--teal)" id="kpi-leads">247</div>
+        <div class="delta up">↑ 18 today</div>
+        <div class="sparkline" id="spark-leads"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Messages Sent</div>
+        <div class="metric-big" id="kpi-sent">184</div>
+        <div class="delta up">↑ 20 today</div>
+        <div class="sparkline" id="spark-sent"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Replies</div>
+        <div class="metric-big" style="color:var(--gold)" id="kpi-replies">31</div>
+        <div class="metric-sub">12.4% reply rate</div>
+        <div class="sparkline" id="spark-replies"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Active Trials</div>
+        <div class="metric-big" style="color:var(--purple)" id="kpi-trials">9</div>
+        <div class="delta up">↑ 2 this week</div>
+        <div class="sparkline" id="spark-trials"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">MRR</div>
+        <div class="metric-big" style="color:var(--green)">€<span id="kpi-mrr">441</span></div>
+        <div class="delta up">↑ €79 this week</div>
+        <div class="sparkline" id="spark-mrr"></div>
+      </div>
+    </div>
+
+    <!-- AGENTS STATUS + LOG -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><span class="card-label">Agent Status</span></div>
+        <div style="display:flex;flex-direction:column;gap:10px" id="agent-status-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-label">Live Activity Log</span></div>
+        <div class="log-stream" id="live-log"></div>
+      </div>
+    </div>
+
+    <!-- PIPELINE MINI + APPROVAL PREVIEW -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-label">Country Performance</span>
+          <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px" onclick="showPanel('countries')">Manage</button>
+        </div>
+        <div id="country-perf"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-label">Approval Queue Preview</span>
+          <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="showPanel('queue')">Review All (12)</button>
+        </div>
+        <div id="queue-preview"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── AGENTS ─── -->
+<div id="panel-agents" class="panel">
+  <div class="topbar">
+    <h2>Agent Control Centre</h2>
+    <button class="btn btn-ghost" onclick="runAllAgents()">▶ Run All Now</button>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+    <div class="agent-grid" id="agent-cards"></div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Agent Execution Log</span></div>
+      <div class="log-stream" id="agent-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── COUNTRIES ─── -->
+<div id="panel-countries" class="panel">
+  <div class="topbar">
+    <h2>Country & City Targeting</h2>
+    <button class="btn btn-primary" onclick="addSelectedCountry()">Apply Selection</button>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+    <div class="card">
+      <div class="card-head"><span class="card-label">Search & Select Countries</span></div>
+      <div class="country-search-wrap">
+        <div class="search-box">
+          <span>🔍</span>
+          <input id="country-input" placeholder="Type country name, e.g. Montenegro, Brazil, Paraguay..." oninput="filterCountries(this.value)" onkeydown="if(event.key==='Enter')addCountryFromInput()"/>
+        </div>
+        <button class="btn btn-primary" onclick="addCountryFromInput()">Add</button>
+      </div>
+      <div id="country-suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Active Countries</span><span id="active-count" style="font-size:12px;color:var(--teal)">2 countries</span></div>
+      <div id="active-country-list" class="country-tags"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">City Configuration</span></div>
+      <div id="city-config"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Business Category Targets</span></div>
+      <div class="check-list">
+        <label class="check-item"><input type="checkbox" checked/><div class="check-item-body"><strong>🏨 Hotels & Guesthouses</strong><p>lodging, guest_house, hostel — highest booking volume</p></div></label>
+        <label class="check-item"><input type="checkbox" checked/><div class="check-item-body"><strong>⛵ Tour & Activity Operators</strong><p>travel_agency, tourist_attraction — boat tours, hiking guides</p></div></label>
+        <label class="check-item"><input type="checkbox" checked/><div class="check-item-body"><strong>🏖️ Beach Clubs & Rentals</strong><p>amusement_park, spa — sunbed operators, watersports</p></div></label>
+        <label class="check-item"><input type="checkbox"/><div class="check-item-body"><strong>🚗 Car Rentals & Transfers</strong><p>car_rental — airport and city transfers</p></div></label>
+        <label class="check-item"><input type="checkbox"/><div class="check-item-body"><strong>🍽️ Restaurants</strong><p>restaurant — tourist-facing, WhatsApp reservation potential</p></div></label>
+        <label class="check-item"><input type="checkbox"/><div class="check-item-body"><strong>🦷 Medical Tourism (Dental)</strong><p>dentist, doctor — high-ticket, international patients</p></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LEADS ─── -->
+<div id="panel-leads" class="panel">
+  <div class="topbar">
+    <h2>Lead Database</h2>
+    <div style="display:flex;gap:8px">
+      <select class="form-input" style="width:auto;padding:6px 10px" onchange="filterLeads(this.value)">
+        <option value="all">All Countries</option>
+        <option value="Albania">🇦🇱 Albania</option>
+        <option value="Montenegro">🇲🇪 Montenegro</option>
+        <option value="Brazil">🇧🇷 Brazil</option>
+      </select>
+      <select class="form-input" style="width:auto;padding:6px 10px" onchange="filterLeads(null,this.value)">
+        <option value="all">All Statuses</option>
+        <option value="new">New</option>
+        <option value="contacted">Contacted</option>
+        <option value="interested">Interested</option>
+        <option value="trial">Trial</option>
+        <option value="paying">Paying</option>
+      </select>
+      <button class="btn btn-ghost" onclick="exportLeads()">⬇ Export CSV</button>
+    </div>
+  </div>
+  <div style="padding:24px">
+    <div class="table-wrap">
+      <div class="table-head">
+        <span style="font-size:13px;font-weight:700;color:var(--grey)"><span id="lead-count">247</span> leads found</span>
+        <div class="search-box" style="width:240px"><span>🔍</span><input placeholder="Search business name..." oninput="searchLeads(this.value)"/></div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Business</th><th>Country / City</th><th>Category</th>
+          <th>Score</th><th>Status</th><th>Last Action</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="leads-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PIPELINE ─── -->
+<div id="panel-pipeline" class="panel">
+  <div class="topbar"><h2>Sales Pipeline</h2></div>
+  <div style="padding:24px">
+    <div class="pipeline" id="pipeline-cols"></div>
+  </div>
+</div>
+
+<!-- ─── APPROVAL QUEUE ─── -->
+<div id="panel-queue" class="panel">
+  <div class="topbar">
+    <h2>Approval Queue</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" onclick="approveAll()">✓ Approve All (12)</button>
+      <button class="btn btn-ghost">Skip All</button>
+    </div>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:12px" id="queue-list"></div>
+</div>
+
+<!-- ─── CONTENT ─── -->
+<div id="panel-content" class="panel">
+  <div class="topbar"><h2>Content Engine</h2></div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+    <div class="tabs">
+      <div class="tab active">📱 Social Posts</div>
+      <div class="tab">📧 Email Templates</div>
+      <div class="tab">🎬 TikTok Scripts</div>
+      <div class="tab">📢 FB Groups</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Generate Content</span></div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Country / Market</label>
+          <select class="form-input"><option>🇦🇱 Albania</option><option>🇲🇪 Montenegro</option><option>🇧🇷 Brazil</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content Type</label>
+          <select class="form-input"><option>Instagram Caption</option><option>TikTok Script</option><option>FB Group Post</option><option>WhatsApp DM</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Business Category</label>
+          <select class="form-input"><option>Guesthouse</option><option>Boat Tour</option><option>Beach Club</option><option>Hotel</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select class="form-input"><option>Albanian</option><option>English</option><option>Portuguese</option><option>Spanish</option></select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="generateContent()">✨ Generate with Claude</button>
+    </div>
+    <div class="card" id="content-output" style="display:none">
+      <div class="card-head"><span class="card-label">Generated Content</span><button class="btn btn-green" style="font-size:11px;padding:4px 10px">→ Send to Buffer</button></div>
+      <div id="content-text" style="background:var(--surface);border-radius:var(--r-sm);padding:14px;font-size:13px;color:var(--grey);line-height:1.7;border:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DAILY REPORT ─── -->
+<div id="panel-report" class="panel">
+  <div class="topbar">
+    <h2>Daily Report</h2>
+    <button class="btn btn-primary" onclick="sendReport()">📱 Send to WhatsApp</button>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div class="report-box" id="report-content"></div>
+    <div class="card">
+      <div class="card-head"><span class="card-label">Actions Required Today</span></div>
+      <div id="actions-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── USERS ─── -->
+<div id="panel-users" class="panel">
+  <div class="topbar">
+    <h2>User Management</h2>
+    <button class="btn btn-primary">+ Add User</button>
+  </div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div class="grid-3">
+      <div class="card"><div class="card-label">Total Users</div><div class="metric-big">3</div></div>
+      <div class="card"><div class="card-label">Active Subscriptions</div><div class="metric-big" style="color:var(--teal)">3</div></div>
+      <div class="card"><div class="card-label">Monthly Revenue</div><div class="metric-big" style="color:var(--green)">€<span id="user-mrr">207</span></div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Plan</th><th>Countries</th><th>Leads</th><th>MRR</th><th>Agents</th><th>Status</th></tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SETUP ─── -->
+<div id="panel-setup" class="panel">
+  <div class="topbar"><h2>Platform Setup</h2></div>
+  <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+    <div class="wizard-steps">
+      <div class="wstep done">1. API Keys</div>
+      <div class="wstep done">2. WhatsApp BSP</div>
+      <div class="wstep active">3. Countries</div>
+      <div class="wstep">4. Agents</div>
+      <div class="wstep">5. Launch</div>
+    </div>
+    <div class="setup-section">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">API Connections</h3>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Google Maps API Key</label><input class="form-input" type="password" placeholder="AIza..." value="AIzaSy•••••••••"/></div>
+        <div class="form-group"><label class="form-label">Anthropic (Claude) API Key</label><input class="form-input" type="password" placeholder="sk-ant-..." value="sk-ant-•••••••••"/></div>
+        <div class="form-group"><label class="form-label">360dialog WhatsApp API Key</label><input class="form-input" type="password" placeholder="d3•••" value="d3••••••••••"/></div>
+        <div class="form-group"><label class="form-label">MongoDB Connection String</label><input class="form-input" type="password" placeholder="mongodb+srv://..." value="mongodb+srv://•••••"/></div>
+        <div class="form-group"><label class="form-label">Apify API Token</label><input class="form-input" type="password" placeholder="apify_api_..." value="apify_api_•••••"/></div>
+        <div class="form-group"><label class="form-label">Buffer Access Token</label><input class="form-input" type="password" placeholder="buf_..." value="buf_•••••••"/></div>
+      </div>
+      <button class="btn btn-primary">Save & Test Connections</button>
+    </div>
+    <div class="setup-section">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Your WhatsApp Numbers</h3>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Albania Number</label><input class="form-input" value="+355 68 317 7201"/></div>
+        <div class="form-group"><label class="form-label">UAE / WhatsApp Number</label><input class="form-input" value="+971 54 400 7555"/></div>
+        <div class="form-group"><label class="form-label">Demo Agent Number</label><input class="form-input" value="+1 (307) 886-8139"/></div>
+        <div class="form-group"><label class="form-label">Daily Report Delivery</label><input class="form-input" value="+971 54 400 7555"/></div>
+      </div>
+    </div>
+    <div class="setup-section">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Agent Schedule</h3>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Research Agent — Daily Run</label><input class="form-input" value="06:00 AM (Gulf Time)"/></div>
+        <div class="form-group"><label class="form-label">Content Agent — Draft Time</label><input class="form-input" value="06:30 AM (Gulf Time)"/></div>
+        <div class="form-group"><label class="form-label">Approval Queue — Sent To You</label><input class="form-input" value="07:00 AM (Gulf Time)"/></div>
+        <div class="form-group"><label class="form-label">Daily Report — WhatsApp</label><input class="form-input" value="07:00 AM (Gulf Time)"/></div>
+        <div class="form-group"><label class="form-label">Follow-Up Agent — Run Time</label><input class="form-input" value="09:00 AM (Gulf Time)"/></div>
+        <div class="form-group"><label class="form-label">Content Publisher — Post Time</label><input class="form-input" value="10:00 AM (optimal)"/></div>
+      </div>
+      <button class="btn btn-primary">Save Schedule</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const COUNTRIES = [
+  {code:'AL',flag:'🇦🇱',name:'Albania',cities:['Saranda','Berat','Theth','Ksamil','Gjirokastër','Vlorë','Tirana'],leads:134,sent:98,replies:14,trials:5,mrr:245},
+  {code:'ME',flag:'🇲🇪',name:'Montenegro',cities:['Kotor','Budva','Tivat','Herceg Novi','Podgorica'],leads:63,sent:52,replies:11,trials:3,mrr:147},
+  {code:'BR',flag:'🇧🇷',name:'Brazil',cities:['Rio de Janeiro','Florianópolis','Búzios','Paraty'],leads:50,sent:34,replies:6,trials:1,mrr:49},
+  {code:'PY',flag:'🇵🇾',name:'Paraguay',cities:['Asunción','Ciudad del Este','Encarnación'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'AR',flag:'🇦🇷',name:'Argentina',cities:['Buenos Aires','Mendoza','Bariloche','Salta'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'GE',flag:'🇬🇪',name:'Georgia',cities:['Tbilisi','Batumi','Gudauri','Stepantsminda'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'MK',flag:'🇲🇰',name:'North Macedonia',cities:['Ohrid','Skopje','Bitola'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'RS',flag:'🇷🇸',name:'Serbia',cities:['Belgrade','Novi Sad','Zlatibor'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'TR',flag:'🇹🇷',name:'Turkey',cities:['Istanbul','Antalya','Cappadocia','Bodrum'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+  {code:'MA',flag:'🇲🇦',name:'Morocco',cities:['Marrakech','Fes','Chefchaouen'],leads:0,sent:0,replies:0,trials:0,mrr:0},
+];
+
+let activeCountries = ['Albania','Montenegro','Brazil'];
+
+const LEADS = [
+  {name:'Bujtina Vjosa',country:'Albania',city:'Theth',flag:'🇦🇱',category:'Guesthouse',score:92,status:'trial',last:'Trial day 4 — 34 msgs handled'},
+  {name:'Saranda Beach Club',country:'Albania',city:'Saranda',flag:'🇦🇱',category:'Beach Club',score:88,status:'interested',last:'Replied: wants demo'},
+  {name:'Boat Tours Ksamil',country:'Albania',city:'Ksamil',flag:'🇦🇱',category:'Boat Tour',score:85,status:'contacted',last:'Msg sent 2h ago'},
+  {name:'Hotel Cattaro',country:'Montenegro',city:'Kotor',flag:'🇲🇪',category:'Hotel',score:90,status:'paying',last:'€79/mo — active'},
+  {name:'Kotor Bay Speedboats',country:'Montenegro',city:'Kotor',flag:'🇲🇪',category:'Boat Charter',score:82,status:'trial',last:'Trial day 11'},
+  {name:'Vila Florianópolis',country:'Brazil',city:'Florianópolis',flag:'🇧🇷',category:'Guesthouse',score:79,status:'interested',last:'Asked about PT lang'},
+  {name:'Thethi Stone House',country:'Albania',city:'Theth',flag:'🇦🇱',category:'Guesthouse',score:75,status:'contacted',last:'Follow-up due today'},
+  {name:'Llogara Paragliding',country:'Albania',city:'Llogara',flag:'🇦🇱',category:'Adventure',score:70,status:'new',last:'Found 1h ago'},
+  {name:'Budva Luxury Villas',country:'Montenegro',city:'Budva',flag:'🇲🇪',category:'Villa Rental',score:88,status:'paying',last:'€49/mo — active'},
+  {name:'Berat Winery Tours',country:'Albania',city:'Berat',flag:'🇦🇱',category:'Tour Operator',score:68,status:'new',last:'Found 3h ago'},
+];
+
+const AGENTS = [
+  {id:'research',cls:'research',icon:'🔍',name:'Research Agent',desc:'Finds tourism businesses on Google Maps and Instagram. Scores and deduplicates leads before adding to CRM.',stats:[{n:'18',l:'Today'},{n:'247',l:'Total'},{n:'92',l:'Avg Score'}],running:true},
+  {id:'content',cls:'content',icon:'✍️',name:'Content Agent',desc:'Drafts personalised WhatsApp messages, Instagram DMs, Facebook posts and TikTok scripts using Claude.',stats:[{n:'20',l:'Drafted'},{n:'12',l:'Queued'},{n:'0.5¢',l:'Per msg'}],running:true},
+  {id:'outreach',cls:'outreach',icon:'📤',name:'Outreach Agent',desc:'Sends approved messages via WhatsApp BSP. Detects replies, classifies intent, triggers follow-up sequences.',stats:[{n:'184',l:'Sent'},{n:'31',l:'Replies'},{n:'7',l:'Follow-ups'}],running:true},
+  {id:'publisher',cls:'publisher',icon:'📢',name:'Publisher Agent',desc:'Schedules and posts content to Instagram, Facebook groups, and TikTok via Buffer on optimal timing.',stats:[{n:'21',l:'Posted'},{n:'3',l:'Pending'},{n:'Fri',l:'Next post'}],running:false},
+  {id:'crm',cls:'crm',icon:'📊',name:'CRM & Report Agent',desc:'Tracks every lead and conversation. Generates daily WhatsApp report at 7am with actions required.',stats:[{n:'247',l:'Tracked'},{n:'9',l:'Follow-ups'},{n:'7am',l:'Report'}],running:true},
+];
+
+const QUEUE = [
+  {icon:'🏠',name:'Thethi Stone House',city:'Theth, Albania',flag:'🇦🇱',msg:'Përshëndetje! Kam parë bujtinën tuaj me pikëzim 4.9 ★ — mysafirët tuaj në Theth meriton gjithçka më të mirën. Ne kemi ndërtuar një agjent AI që u përgjigjet mesazheve gjermanë dhe italianë menjëherë, edhe natën. 30 ditë falas. A doni ta provoni? +355 68 317 7201',channel:'WhatsApp'},
+  {icon:'⛵',name:'Llogara Paragliding',city:'Llogara Pass, Albania',flag:'🇦🇱',msg:"Përshëndetje! Aktiviteti juaj i paraglidingut në Llogaranë është fantastik — por turistët ndërkombëtarë nuk mund t'ju gjejnë në WhatsApp natën. AI jonë i përgjigjet pyetjeve për rezervime 24/7 në 4 gjuhë. 30 ditë falas. Jeni të interesuar?",channel:'WhatsApp'},
+  {icon:'🏨',name:'Berat Winery Tours',city:'Berat, Albania',flag:'🇦🇱',msg:'Hi! Your Berat wine tours have incredible Google reviews — guests clearly love the experience. We built an AI that answers booking inquiries on WhatsApp instantly in English, German and Italian, so you never miss a tour booking overnight. First 30 days completely free. Worth a quick test?',channel:'WhatsApp'},
+  {icon:'🚤',name:'Bay of Kotor Express',city:'Kotor, Montenegro',flag:'🇲🇪',msg:"Hallo! Ihre Schnellboottouren in der Bucht von Kotor klingen wunderschön. Wir haben einen KI-Assistenten entwickelt, der Gästeanfragen auf WhatsApp sofort beantwortet — auch nachts, auch auf Deutsch. 30 Tage kostenlos. Soll ich es Ihnen kurz zeigen?",channel:'WhatsApp'},
+];
+
+const PIPELINE_COLS = [
+  {title:'New Leads',color:'var(--grey)',items:[
+    {biz:'Llogara Paragliding',meta:'Albania · Adventure',val:'Potential €49/mo'},
+    {biz:'Berat Winery Tours',meta:'Albania · Tour Op',val:'Potential €79/mo'},
+    {biz:'Permet Thermal Tours',meta:'Albania · Wellness',val:'Potential €49/mo'},
+  ]},
+  {title:'Contacted',color:'var(--gold)',items:[
+    {biz:'Thethi Stone House',meta:'Albania · Guesthouse',val:'Msg sent 2h ago'},
+    {biz:'Boat Tours Ksamil',meta:'Albania · Boat',val:'Day 3 follow-up due'},
+    {biz:'Shkodër Lakeside Hotel',meta:'Albania · Hotel',val:'No reply yet'},
+  ]},
+  {title:'Interested',color:'var(--purple)',items:[
+    {biz:'Saranda Beach Club',meta:'Albania · Beach',val:'Demo scheduled'},
+    {biz:'Vila Florianópolis',meta:'Brazil · Guest.',val:'Language question'},
+  ]},
+  {title:'Trial Active',color:'var(--teal)',items:[
+    {biz:'Bujtina Vjosa',meta:'Albania · Guest.',val:'Day 4 · 34 msgs'},
+    {biz:'Kotor Bay Speedboats',meta:'Montenegro',val:'Day 11 · 89 msgs'},
+  ]},
+  {title:'Paying',color:'var(--green)',items:[
+    {biz:'Hotel Cattaro',meta:'Montenegro · €79/mo',val:'Month 2'},
+    {biz:'Budva Luxury Villas',meta:'Montenegro · €49/mo',val:'Month 1'},
+    {biz:'Saranda Transfer Co.',meta:'Albania · €49/mo',val:'Week 3'},
+  ]},
+];
+
+const LOG_ENTRIES = [
+  {ts:'07:02',col:'teal',msg:'Research Agent: 18 new leads found in Saranda'},
+  {ts:'07:03',col:'teal',msg:'Research Agent: Deduplicated — 15 added to CRM'},
+  {ts:'07:15',col:'green',msg:'Content Agent: 15 personalised messages drafted'},
+  {ts:'07:16',col:'green',msg:'Content Agent: Approval queue sent to +971544007555'},
+  {ts:'08:41',col:'gold',msg:'Outreach Agent: Muzafar approved 12/15 messages'},
+  {ts:'08:42',col:'gold',msg:'Outreach Agent: 12 WhatsApp messages sent via 360dialog'},
+  {ts:'09:15',col:'teal',msg:'Outreach Agent: Reply from Bujtina Vjosa — INTERESTED ✅'},
+  {ts:'09:16',col:'teal',msg:'CRM Agent: Lead status updated → interested'},
+  {ts:'10:00',col:'green',msg:'Publisher Agent: Instagram post queued for Saranda content'},
+  {ts:'11:30',col:'gold',msg:'Research Agent: Montenegro batch starting — Kotor cities'},
+];
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+function init(){
+  buildSparklines();
+  buildAgentStatus();
+  buildLiveLog();
+  buildCountryPerf();
+  buildQueuePreview();
+  buildAgentCards();
+  buildAgentLog();
+  buildLeadsTable();
+  buildPipeline();
+  buildQueueList();
+  buildReport();
+  buildUsersTable();
+  buildActiveCountries();
+  renderCountrySuggestions('');
+  buildActiveCityConfig();
+}
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.textContent.toLowerCase().includes(id.slice(0,5))) n.classList.add('active');
+  });
+  if(id==='dashboard') document.querySelectorAll('.nav-item')[0].classList.add('active');
+}
+
+// ─── SPARKLINES ───────────────────────────────────────────────────────────
+function buildSparklines(){
+  const sets = {
+    'spark-leads':[8,12,9,15,18,14,18],
+    'spark-sent':[12,14,16,18,20,18,20],
+    'spark-replies':[1,2,3,2,4,3,5],
+    'spark-trials':[3,4,5,6,7,8,9],
+    'spark-mrr':[49,49,98,147,196,362,441],
+  };
+  Object.entries(sets).forEach(([id,vals])=>{
+    const el=document.getElementById(id); if(!el) return;
+    const mx=Math.max(...vals);
+    el.innerHTML=vals.map(v=>`<div class="spark-bar" style="height:${Math.round(v/mx*100)}%"></div>`).join('');
+  });
+}
+
+// ─── AGENT STATUS (dashboard) ─────────────────────────────────────────────
+function buildAgentStatus(){
+  const el=document.getElementById('agent-status-list'); if(!el) return;
+  el.innerHTML=AGENTS.map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:18px">${a.icon}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700">${a.name}</div>
+        <div style="font-size:11px;color:var(--grey)">${a.stats[0].n} ${a.stats[0].l} · ${a.stats[1].n} ${a.stats[1].l}</div>
+      </div>
+      <div class="${a.running?'running on':'running off'}">${a.running?'● Running':'○ Paused'}</div>
+    </div>`).join('');
+}
+
+// ─── LIVE LOG ─────────────────────────────────────────────────────────────
+function buildLiveLog(){
+  const el=document.getElementById('live-log'); if(!el) return;
+  el.innerHTML=LOG_ENTRIES.map(e=>`<div class="log-line"><span class="ts">[${e.ts}] </span><span class="${e.col}">${e.msg}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+// ─── COUNTRY PERF ─────────────────────────────────────────────────────────
+function buildCountryPerf(){
+  const el=document.getElementById('country-perf'); if(!el) return;
+  const active=COUNTRIES.filter(c=>activeCountries.includes(c.name));
+  el.innerHTML=active.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:22px">${c.flag}</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${c.name}</div>
+        <div class="score-bar" style="margin-top:5px">
+          <div class="score-track"><div class="score-fill" style="width:${Math.round(c.leads/134*100)}%"></div></div>
+          <span style="font-size:11px;color:var(--grey)">${c.leads} leads</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:var(--teal);font-size:14px">€${c.mrr}/mo</div>
+        <div style="font-size:11px;color:var(--grey)">${c.trials} trials</div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── QUEUE PREVIEW ────────────────────────────────────────────────────────
+function buildQueuePreview(){
+  const el=document.getElementById('queue-preview'); if(!el) return;
+  el.innerHTML=QUEUE.slice(0,3).map(q=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:22px">${q.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px">${q.name}</div>
+        <div style="font-size:11px;color:var(--grey);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.msg.slice(0,60)}...</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn btn-green" style="font-size:11px;padding:4px 8px" onclick="showPanel('queue')">Review</button>
+      </div>
+    </div>`).join('');
+}
+
+// ─── AGENT CARDS ─────────────────────────────────────────────────────────
+function buildAgentCards(){
+  const el=document.getElementById('agent-cards'); if(!el) return;
+  el.innerHTML=AGENTS.map(a=>`
+    <div class="agent-card ${a.cls}">
+      <div class="agent-icon">${a.icon}</div>
+      <div class="agent-name">${a.name}</div>
+      <div class="agent-desc">${a.desc}</div>
+      <div class="agent-stats">
+        ${a.stats.map(s=>`<div class="astat"><div class="astat-n">${s.n}</div><div class="astat-l">${s.l}</div></div>`).join('')}
+      </div>
+      <div class="toggle-row">
+        <span class="${a.running?'running on':'running off'}">${a.running?'● Running':'○ Paused'}</span>
+        <label class="toggle">
+          <input type="checkbox" ${a.running?'checked':''} onchange="toggleAgent('${a.id}',this.checked)"/>
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </label>
+      </div>
+    </div>`).join('');
+}
+
+function buildAgentLog(){
+  const el=document.getElementById('agent-log'); if(!el) return;
+  el.innerHTML=LOG_ENTRIES.map(e=>`<div class="log-line"><span class="ts">[${e.ts}] </span><span class="${e.col}">${e.msg}</span></div>`).join('');
+}
+
+function toggleAgent(id,on){
+  const a=AGENTS.find(x=>x.id===id); if(a) a.running=on;
+  buildAgentStatus();
+  addLog(`${on?'Started':'Paused'} ${AGENTS.find(x=>x.id===id)?.name}`, on?'teal':'gold');
+}
+
+function runAllAgents(){
+  AGENTS.forEach(a=>a.running=true);
+  buildAgentCards(); buildAgentStatus();
+  addLog('All agents started by user','teal');
+}
+
+let logTimer;
+function addLog(msg,col='teal'){
+  const now=new Date();
+  const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const entry={ts,col,msg};
+  LOG_ENTRIES.push(entry);
+  ['live-log','agent-log'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const line=document.createElement('div');
+    line.className='log-line';
+    line.innerHTML=`<span class="ts">[${ts}] </span><span class="${col}">${msg}</span>`;
+    el.appendChild(line);
+    el.scrollTop=el.scrollHeight;
+  });
+}
+
+// ─── LEADS TABLE ─────────────────────────────────────────────────────────
+function buildLeadsTable(filter={country:'all',status:'all',search:''}){
+  const el=document.getElementById('leads-tbody'); if(!el) return;
+  let leads=[...LEADS];
+  if(filter.country&&filter.country!=='all') leads=leads.filter(l=>l.country===filter.country);
+  if(filter.status&&filter.status!=='all') leads=leads.filter(l=>l.status===filter.status);
+  if(filter.search) leads=leads.filter(l=>l.name.toLowerCase().includes(filter.search.toLowerCase()));
+  document.getElementById('lead-count').textContent=leads.length;
+  el.innerHTML=leads.map(l=>`
+    <tr>
+      <td><strong>${l.name}</strong></td>
+      <td>${l.flag} ${l.country} · ${l.city}</td>
+      <td style="color:var(--grey)">${l.category}</td>
+      <td>
+        <div class="score-bar">
+          <div class="score-track" style="width:80px"><div class="score-fill" style="width:${l.score}%"></div></div>
+          <span style="font-size:11px;color:var(--grey)">${l.score}</span>
+        </div>
+      </td>
+      <td><span class="status-pill ${l.status}">${l.status.replace('_',' ')}</span></td>
+      <td style="font-size:11px;color:var(--grey);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.last}</td>
+      <td>
+        <div class="action-btns">
+          <button class="icon-btn" title="WhatsApp">💬</button>
+          <button class="icon-btn" title="View">👁</button>
+          <button class="icon-btn" title="More">⋯</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+let _filter={country:'all',status:'all',search:''};
+function filterLeads(c,s){if(c!==null&&c!==undefined)_filter.country=c;if(s)_filter.status=s;buildLeadsTable(_filter);}
+function searchLeads(v){_filter.search=v;buildLeadsTable(_filter);}
+
+// ─── PIPELINE ─────────────────────────────────────────────────────────────
+function buildPipeline(){
+  const el=document.getElementById('pipeline-cols'); if(!el) return;
+  el.innerHTML=PIPELINE_COLS.map(col=>`
+    <div class="pipe-col">
+      <div class="pipe-header">
+        <span style="color:${col.color}">${col.title}</span>
+        <span class="pipe-count">${col.items.length}</span>
+      </div>
+      ${col.items.map(item=>`
+        <div class="pipe-card">
+          <div class="pipe-biz">${item.biz}</div>
+          <div class="pipe-meta">${item.meta}</div>
+          <div class="pipe-val">${item.val}</div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ─── QUEUE ────────────────────────────────────────────────────────────────
+function buildQueueList(){
+  const el=document.getElementById('queue-list'); if(!el) return;
+  el.innerHTML=QUEUE.map((q,i)=>`
+    <div class="queue-item" id="qi-${i}">
+      <div class="queue-avatar">${q.icon}</div>
+      <div class="queue-body">
+        <div class="queue-meta">
+          <span class="queue-name">${q.name}</span>
+          <span class="flag-sm">${q.flag}</span>
+          <span class="queue-city">${q.city}</span>
+          <span class="status-pill new" style="font-size:10px">${q.channel}</span>
+        </div>
+        <div class="queue-msg">${q.msg}</div>
+        <div class="queue-actions">
+          <button class="btn btn-green" onclick="approveMsg(${i})">✓ Approve & Send</button>
+          <button class="btn btn-ghost" onclick="editMsg(${i})">✏ Edit</button>
+          <button class="btn btn-red" onclick="skipMsg(${i})">✕ Skip</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function approveMsg(i){
+  const el=document.getElementById('qi-'+i); if(!el) return;
+  el.style.opacity='0.4';
+  el.querySelector('.queue-actions').innerHTML='<span style="color:var(--green);font-size:12px;font-weight:700">✓ Sent via WhatsApp</span>';
+  addLog(`Message approved & sent: ${QUEUE[i].name}`,'green');
+}
+function skipMsg(i){
+  const el=document.getElementById('qi-'+i); if(!el) return;
+  el.style.opacity='0.3';
+  el.querySelector('.queue-actions').innerHTML='<span style="color:var(--lgrey);font-size:12px">Skipped</span>';
+}
+function editMsg(i){alert('Edit mode: paste your edits in the message field (full editor coming in v2)');}
+function approveAll(){QUEUE.forEach((_,i)=>approveMsg(i));addLog('All 4 visible messages approved & sent','green');}
+
+// ─── REPORT ───────────────────────────────────────────────────────────────
+function buildReport(){
+  const el=document.getElementById('report-content'); if(!el) return;
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  el.innerHTML=`
+<div class="hl">📊 DAILY REPORT — ${today}</div>
+<div class="hl">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+<div class="hl">COUNTRIES ACTIVE: <span class="teal">Albania · Montenegro · Brazil</span></div>
+<div></div>
+<div class="hl">NEW LEADS FOUND: <span class="teal">18</span></div>
+<div>  → Albania (Saranda): 12 leads</div>
+<div>  → Montenegro (Kotor): 4 leads</div>
+<div>  → Brazil (Florianópolis): 2 leads</div>
+<div></div>
+<div class="hl">MESSAGES SENT TODAY: <span class="teal">20</span></div>
+<div class="hl">REPLIES RECEIVED: <span class="gold">3</span></div>
+<div class="green">  → Bujtina Vjosa: INTERESTED ✅</div>
+<div class="red">  → Hotel Saranda Beach: Not now ❌</div>
+<div class="gold">  → Boat Tours Ksamil: Question about German language</div>
+<div></div>
+<div class="hl">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+<div class="hl">ACTIVE TRIALS: <span class="teal">9</span></div>
+<div class="hl">PAYING CUSTOMERS: <span class="green">3</span></div>
+<div class="hl">MRR: <span class="green">€441/month</span> (+€79 this week)</div>
+<div></div>
+<div class="hl">FOLLOW-UPS DUE TODAY: <span class="gold">7 leads</span></div>
+<div>  Thethi Stone House, Llogara Park Hotel,</div>
+<div>  Vila Ksamil, Durres Beach Club (+4 more)</div>
+<div></div>
+<div class="hl">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+<div class="hl red">⚡ ACTION NEEDED FROM YOU:</div>
+<div class="green">  1. Schedule demo: Bujtina Vjosa (INTERESTED)</div>
+<div class="gold">  2. Reply to German language question: Boat Tours Ksamil</div>
+<div class="teal">  3. Review 12 outreach messages in approval queue</div>`;
+
+  const al=document.getElementById('actions-list'); if(!al) return;
+  al.innerHTML=[
+    {icon:'🟢',text:'Schedule demo with Bujtina Vjosa — they replied INTERESTED',btn:'Open WhatsApp',col:'green'},
+    {icon:'🟡',text:'Reply to language question from Boat Tours Ksamil',btn:'Draft Reply',col:'gold'},
+    {icon:'🔵',text:'Review 12 messages in approval queue',btn:'Open Queue',col:'teal'},
+  ].map(a=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border)">
+      <span style="font-size:18px">${a.icon}</span>
+      <span style="flex:1;font-size:13px">${a.text}</span>
+      <button class="btn" style="background:rgba(0,194,168,.1);color:var(--${a.col});border:1px solid rgba(0,194,168,.2);font-size:11px;padding:4px 10px">${a.btn}</button>
+    </div>`).join('');
+}
+function sendReport(){addLog('Daily report sent to +971 54 400 7555 via WhatsApp','teal');alert('Report sent to +971 54 400 7555');}
+
+// ─── USERS ────────────────────────────────────────────────────────────────
+function buildUsersTable(){
+  const el=document.getElementById('users-tbody'); if(!el) return;
+  const users=[
+    {name:'Muzafar Jatoi',email:'muzafarj110@gmail.com',plan:'pro',avatar:'MJ',clr:'00C2A8',countries:'AL · ME · BR',leads:247,mrr:441,agents:5,status:'active'},
+    {name:'Ahmed Hassan',email:'ahmed@businessdubai.ae',plan:'growth',avatar:'AH',clr:'7C63FF',countries:'AE · SA · EG',leads:89,mrr:147,agents:3,status:'active'},
+    {name:'Sofia Reyes',email:'sofia@tourmexico.mx',plan:'starter',avatar:'SR',clr:'F5A623',countries:'MX',leads:34,mrr:49,agents:2,status:'trial'},
+  ];
+  el.innerHTML=users.map(u=>`
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="user-avatar" style="background:rgba(${parseInt(u.clr.slice(0,2),16)},${parseInt(u.clr.slice(2,4),16)},${parseInt(u.clr.slice(4,6),16)},0.15);color:#${u.clr}">${u.avatar}</div>
+          <div><div class="uname">${u.name}</div><div class="uemail">${u.email}</div></div>
+        </div>
+      </td>
+      <td><span class="plan-tag ${u.plan}">${u.plan}</span></td>
+      <td style="font-size:12px;color:var(--grey)">${u.countries}</td>
+      <td style="font-weight:700">${u.leads}</td>
+      <td style="color:var(--teal);font-weight:700">€${u.mrr}</td>
+      <td style="color:var(--grey)">${u.agents}/5 active</td>
+      <td><span class="status-pill ${u.status==='active'?'paying':'new'}">${u.status}</span></td>
+    </tr>`).join('');
+  document.getElementById('user-mrr').textContent=users.reduce((a,u)=>a+u.mrr,0);
+}
+
+// ─── COUNTRIES ────────────────────────────────────────────────────────────
+function buildActiveCountries(){
+  const el=document.getElementById('active-countries');
+  if(el) el.innerHTML=activeCountries.map(c=>{
+    const co=COUNTRIES.find(x=>x.name===c);
+    return co?`<span style="font-size:16px" title="${c}">${co.flag}</span>`:'';
+  }).join('');
+  const acl=document.getElementById('active-country-list');
+  if(acl) acl.innerHTML=activeCountries.map(c=>{
+    const co=COUNTRIES.find(x=>x.name===c);
+    if(!co) return '';
+    return `<div class="ctag active"><span class="flag">${co.flag}</span>${co.name}<button onclick="removeCountry('${co.name}')">×</button></div>`;
+  }).join('');
+  const ac=document.getElementById('active-count');
+  if(ac) ac.textContent=`${activeCountries.length} countries`;
+  buildActiveCityConfig();
+  buildCountryPerf();
+}
+
+function buildActiveCityConfig(){
+  const el=document.getElementById('city-config'); if(!el) return;
+  el.innerHTML=activeCountries.map(c=>{
+    const co=COUNTRIES.find(x=>x.name===c); if(!co) return '';
+    return `<div style="margin-bottom:16px">
+      <div style="font-weight:700;font-size:13px;margin-bottom:8px">${co.flag} ${co.name}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${co.cities.map(city=>`<div class="ctag" style="cursor:pointer;color:var(--teal);border-color:var(--teal-dim)">${city}</div>`).join('')}
+        <div class="ctag" style="cursor:pointer;color:var(--lgrey)" onclick="addCity('${co.name}')">+ Add City</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterCountries(val){renderCountrySuggestions(val);}
+function renderCountrySuggestions(val){
+  const el=document.getElementById('country-suggestions'); if(!el) return;
+  const available=COUNTRIES.filter(c=>!activeCountries.includes(c.name)&&c.name.toLowerCase().includes(val.toLowerCase()));
+  el.innerHTML=available.map(c=>`<div class="ctag" style="cursor:pointer" onclick="addCountry('${c.name}')">${c.flag} ${c.name}</div>`).join('');
+}
+function addCountry(name){
+  if(!activeCountries.includes(name)){
+    activeCountries.push(name);
+    buildActiveCountries();
+    renderCountrySuggestions(document.getElementById('country-input')?.value||'');
+    addLog(`Country added: ${name} — Research Agent will start scanning tomorrow`,'teal');
+  }
+}
+function addCountryFromInput(){
+  const val=document.getElementById('country-input')?.value.trim();
+  if(!val) return;
+  const co=COUNTRIES.find(c=>c.name.toLowerCase()===val.toLowerCase());
+  if(co) addCountry(co.name);
+  else addLog(`Country "${val}" not in database — add API support manually`,'gold');
+}
+function removeCountry(name){
+  activeCountries=activeCountries.filter(c=>c!==name);
+  buildActiveCountries();
+  renderCountrySuggestions('');
+  addLog(`Country removed: ${name}`,'gold');
+}
+function addSelectedCountry(){showPanel('dashboard');buildActiveCountries();}
+function addCity(country){const city=prompt(`Add city in ${country}:`);if(city){const co=COUNTRIES.find(c=>c.name===country);if(co){co.cities.push(city);buildActiveCityConfig();}}}
+
+// ─── CONTENT GENERATOR ───────────────────────────────────────────────────
+async function generateContent(){
+  const out=document.getElementById("content-output");
+  const txt=document.getElementById("content-text");
+  if(!out||!txt) return;
+  out.style.display="block";
+  txt.textContent="✨ Calling Claude API...";
+  try{
+    const token = localStorage.getItem("authToken") || "demo-token-muzafar";
+    const res=await fetch("/api/content/generate",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${token}`
+      },
+      body:JSON.stringify({
+        country:"Albania",
+        contentType:"instagram",
+        category:"guesthouse",
+        language:"Albanian",
+        businessName:"Saranda Guesthouse",
+        city:"Saranda"
+      })
+    });
+    const d=await res.json();
+    txt.textContent=d.content?.[0]?.text||d.error||"Claude API key needed";
+  }catch(e){
+    txt.textContent="Error: "+e.message;
+  }
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────
+function exportLeads(){
+  const csv=['Business,Country,City,Category,Score,Status,Last Action',...LEADS.map(l=>`${l.name},${l.country},${l.city},${l.category},${l.score},${l.status},"${l.last}"`)].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='leads-export.csv';a.click();
+}
+
+// ─── ANIMATE METRICS ─────────────────────────────────────────────────────
+function animateNum(id,target,prefix=''){
+  const el=document.getElementById(id); if(!el) return;
+  let cur=0,step=Math.ceil(target/40);
+  const t=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=prefix+cur;if(cur>=target)clearInterval(t);},30);
+}
+
+// ─── SIMULATE LIVE ACTIVITY ──────────────────────────────────────────────
+function simulateLive(){
+  const msgs=[
+    {msg:'Research Agent: Scanning Kotor Bay businesses...',col:'teal'},
+    {msg:'Research Agent: Found 3 new boat tour operators',col:'teal'},
+    {msg:'Outreach Agent: Reply from Bujtina Gjokaj — INTERESTED ✅',col:'green'},
+    {msg:'CRM Agent: Status updated → interested',col:'green'},
+    {msg:'Content Agent: Follow-up drafted for 7 leads',col:'gold'},
+    {msg:'Publisher Agent: Instagram Reel posted — Saranda sunset',col:'green'},
+    {msg:'Research Agent: Brazil batch complete — 8 new leads',col:'teal'},
+  ];
+  let i=0;
+  setInterval(()=>{
+    const m=msgs[i%msgs.length];
+    addLog(m.msg,m.col);
+    i++;
+    const kpi=document.getElementById('kpi-leads');
+    if(kpi&&i%3===0) kpi.textContent=parseInt(kpi.textContent)+1;
+  },4000);
+}
+
+// ─── START ────────────────────────────────────────────────────────────────
+window.onload=()=>{
+  init();
+  simulateLive();
+};
+</script>
+</body>
+</html>

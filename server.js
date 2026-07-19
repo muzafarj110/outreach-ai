@@ -142,3 +142,13 @@ process.on('SIGTERM', async () => {
   await mongoose.connection.close();
   process.exit(0);
 });
+
+// Serve the frontend HTML
+app.use(express.static('public'));
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+// Disable CSP for development
+app.use((req, res, next) => {
+});
