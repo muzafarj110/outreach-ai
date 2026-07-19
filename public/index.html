@@ -1089,7 +1089,7 @@ async function generateContent(){
       })
     });
     const d=await res.json();
-    txt.textContent=d.content?.[0]?.text||d.error||"Claude API key needed";
+    txt.textContent=d.content||d.error||"No content";
   }catch(e){
     txt.textContent="Error: "+e.message;
   }
