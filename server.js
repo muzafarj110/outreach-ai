@@ -16,7 +16,7 @@ const app = express();
 // ─── SECURITY LAYER 1: HELMET ─────────────────────
 // Sets 11 HTTP headers that block common attacks
 // (XSS, clickjacking, MIME sniffing, etc.)
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // ─── SECURITY LAYER 2: CORS ───────────────────────
 // Only YOUR frontend domain can call this server.
