@@ -7,6 +7,7 @@
 const express  = require('express');
 const requireAuth = require('../middleware/auth');
 const router   = express.Router();
+const Content  = require("../models/Content");
 
 // All content routes require a valid JWT
 // router.use(requireAuth);
@@ -49,6 +50,7 @@ router.post('/generate', async (req, res, next) => {
     // Log usage per user (for billing later)
     console.log(`[Content] User ${req.userId} | ${country} | ${contentType} | ~${data.usage?.output_tokens} tokens`);
 
+await Content.create({ country, contentType, category, language, businessName, city, text, tokens: data.usage?.output_tokens || 0 });
     res.json({ content: text, tokens: data.usage });
 
   } catch (err) { next(err); }
