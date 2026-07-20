@@ -485,19 +485,19 @@ select.form-input option{background:var(--card)}
       <div class="grid-2">
         <div class="form-group">
           <label class="form-label">Country / Market</label>
-          <select class="form-input"><option>🇦🇱 Albania</option><option>🇲🇪 Montenegro</option><option>🇧🇷 Brazil</option></select>
+          <select id="sel-country" class="form-input"><option>🇦🇱 Albania</option><option>🇲🇪 Montenegro</option><option>🇧🇷 Brazil</option></select>
         </div>
         <div class="form-group">
           <label class="form-label">Content Type</label>
-          <select class="form-input"><option>Instagram Caption</option><option>TikTok Script</option><option>FB Group Post</option><option>WhatsApp DM</option></select>
+          <select id="sel-type" class="form-input"><option>Instagram Caption</option><option>TikTok Script</option><option>FB Group Post</option><option>WhatsApp DM</option></select>
         </div>
         <div class="form-group">
           <label class="form-label">Business Category</label>
-          <select class="form-input"><option>Guesthouse</option><option>Boat Tour</option><option>Beach Club</option><option>Hotel</option></select>
+          <select id="sel-category" class="form-input"><option>Guesthouse</option><option>Boat Tour</option><option>Beach Club</option><option>Hotel</option></select>
         </div>
         <div class="form-group">
           <label class="form-label">Language</label>
-          <select class="form-input"><option>Albanian</option><option>English</option><option>Portuguese</option><option>Spanish</option></select>
+          <select id="sel-language" class="form-input"><option>Albanian</option><option>English</option><option>Portuguese</option><option>Spanish</option></select>
         </div>
       </div>
       <button class="btn btn-primary" onclick="generateContent()">✨ Generate with Claude</button>
@@ -1073,6 +1073,10 @@ async function generateContent(){
   txt.textContent="✨ Calling Claude API...";
   try{
     const token = localStorage.getItem("authToken") || "demo-token-muzafar";
+    const country = document.getElementById("sel-country").value.replace(/[^a-zA-Z]/g,"").trim();
+    const contentType = document.getElementById("sel-type").value;
+    const category = document.getElementById("sel-category").value;
+    const language = document.getElementById("sel-language").value;
     const res=await fetch("/api/content/generate",{
       method:"POST",
       headers:{
@@ -1080,10 +1084,10 @@ async function generateContent(){
         "Authorization":`Bearer ${token}`
       },
       body:JSON.stringify({
-        country:"Albania",
-        contentType:"instagram",
-        category:"guesthouse",
-        language:"Albanian",
+        country:country,
+        contentType:contentType,
+        category:category,
+        language:language,
         businessName:"Saranda Guesthouse",
         city:"Saranda"
       })
