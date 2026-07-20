@@ -102,12 +102,20 @@ Write a WhatsApp outreach message in ${lead.language || 'Albanian'} that:
 function buildPrompt({ country, contentType, category, language, businessName, city, rating }) {
   const demo = 'wa.me/13078868139';
   const contact = '+355 68 317 7201';
+  const loc = city || country;
+  const biz = businessName || `a ${category || 'tourism business'} in ${loc}`;
+  const lang = language || 'English';
+
   const targets = {
-    'Instagram Caption': `Write an Instagram caption for a ${category || 'tourism business'} in ${city || country}. Problem: missed WhatsApp bookings at night. Solution: AI answers instantly in 4 languages. Include free 30-day trial. End with demo link: ${demo}. Language: ${language || 'English'}. Max 120 words. Authentic, not salesy.`,
-    'TikTok Script': `Write a 45-second TikTok script for a salesperson visiting ${country} selling a WhatsApp AI booking agent. Open with a shocking stat (e.g. average reply time). Show the problem. Demo the solution. Call to action: message ${demo}. Language: ${language || 'English'}. Include [VISUAL] and [VOICEOVER] cues.`,
-    'FB Group Post': `Write a value-first Facebook group post for ${country} tourism business owners. Share a real insight about missed WhatsApp bookings. Soft pitch at the end for AI agent at €49/month. Language: ${language || 'English'}. Max 150 words.`,
-    'WhatsApp DM': `Write a cold WhatsApp outreach message for ${businessName || 'a tourism business'} in ${city || country}. Rating: ${rating || 4.5}★. Reference their specific business. One sentence on AI booking agent. Offer 30-day free trial. Contact: ${contact}. Max 4 sentences. Language: ${language || 'Albanian'}.`
+    'Instagram Caption': `You are a social media expert for an AI WhatsApp booking agent targeting tourism businesses in ${country}. Write an Instagram caption for a ${category || 'tourism business'} in ${loc}. Language: ${lang}. Rules: Open with a hook (missed bookings, slow replies, lost revenue). One sentence on AI solution (24/7 WhatsApp, 4 languages). Mention free 30-day trial. End with CTA: ${demo}. Max 120 words. Authentic, not salesy. 2-3 emojis. If Albanian use ë and ç. Include 5 hashtags.`,
+
+    'TikTok Script': `You are a TikTok scriptwriter for a sales rep visiting ${country} selling a WhatsApp AI booking agent at €49/month. Write a punchy 45-second TikTok script. Language: ${lang}. Structure: [0-3s] Hook: shocking stat about missed bookings. [3-15s] Problem: tourist sends WhatsApp, no reply, books elsewhere. [15-35s] Solution: AI replies in 3 seconds, 24/7, 4 languages. [35-45s] CTA: message ${demo} for free 30-day trial. Use [VISUAL:] and [VOICEOVER:] cues. Include production notes table at the end.`,
+
+    'FB Group Post': `You are a marketing consultant writing for a ${country} tourism business Facebook group. Language: ${lang}. Write a value-first post — no hard sell in first 80%. Structure: Open with a question (how many bookings did you miss last night?). Share a stat about WhatsApp response times. Tell a short anonymous success story. Soft CTA at end: AI booking agent €49/month, free trial, contact ${contact}. Max 200 words. Conversational. Max 2 emojis.`,
+
+    'WhatsApp DM': `You are a sales rep for an AI WhatsApp booking agent. Write a cold outreach WhatsApp message. Business: ${biz}. Rating: ${rating || 4.5}★. Language: ${lang}. Rules: Open referencing their business (rating, category, location). One sentence on the AI agent. Mention 30-day free trial, no contract, no risk. Close with: Muzafar — ${contact}. MAX 4 sentences. Warm and genuine. If Albanian use ë and ç.`
   };
+
   return targets[contentType] || targets['Instagram Caption'];
 }
 
