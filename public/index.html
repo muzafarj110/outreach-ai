@@ -1110,7 +1110,7 @@ function sendToBuffer(){
   const channel=document.getElementById("sel-type")?.value?.toLowerCase().includes("instagram")?"instagram":document.getElementById("sel-type")?.value?.toLowerCase().includes("facebook")?"facebook":"linkedin";
   fetch("/api/buffer/post",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:content,channel:channel,imageUrl:imageUrl,language:lang})})
   .then(r=>r.json())
-  .then(d=>alert(d.success?"✅ Sent tor ("+lang+")!":"❌ Error: "+d.error))
+  .then(d=>alert(d.success?"✅ Sent to ("+lang+")!":"❌ Error: "+d.error))
   .catch(e=>alert("Error: "+e.message));
 }
 
