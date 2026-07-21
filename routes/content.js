@@ -121,4 +121,14 @@ function buildPrompt({ country, contentType, category, language, businessName, c
   return targets[contentType] || targets['Instagram Caption'];
 }
 
+// GET /api/content/history
+router.get('/history', async (req, res) => {
+  try {
+    const items = await Content.find().sort({ createdAt: -1 }).limit(20);
+    res.json({ count: items.length, items });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
