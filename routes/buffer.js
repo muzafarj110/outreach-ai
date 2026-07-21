@@ -26,7 +26,7 @@ const { text, channel, imageUrl, language } = req.body;
           content: {
             title: "OutreachAI Post (${language || 'EN'})",
             text: ${JSON.stringify(text)},
-            media: { url: "${imageUrl || ''}" }
+            media: { url: "${imageUrl || ''}", type: IMAGE }
           }
         }) {
           ... on Idea {
