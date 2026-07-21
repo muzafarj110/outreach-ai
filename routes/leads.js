@@ -3,7 +3,7 @@ const express  = require('express');
 const mongoose = require('mongoose');
 const requireAuth = require('../middleware/auth');
 const router   = express.Router();
-router.use(requireAuth);
+// router.use(requireAuth);
 
 const Lead = () => mongoose.models.Lead;
 
