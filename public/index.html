@@ -918,6 +918,17 @@ function buildQueueList(){
 
 
 
+function approveMsg(i){
+  const el=document.getElementById("qi-"+i); if(!el) return;
+  const q=QUEUE[i];
+  const phone=(q.phone||"").replace(/[^0-9]/g,"");
+  const waUrl="https://wa.me/"+phone+"?text="+encodeURIComponent(q.msg);
+  navigator.clipboard.writeText(q.msg).catch(()=>{});
+  el.style.opacity="0.4";
+  el.querySelector(".queue-actions").innerHTML="<span style=\"color:var(--green);font-size:12px;font-weight:700\">✓ Copied! Opening WhatsApp...</span>";
+  addLog("Message copied + WhatsApp opened: "+q.name,"green");
+  if(phone) window.open(waUrl,"_blank");
+}
 function skipMsg(i){
   const el=document.getElementById('qi-'+i); if(!el) return;
   el.style.opacity='0.3';
