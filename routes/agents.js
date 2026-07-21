@@ -2,7 +2,7 @@
 const express  = require('express');
 const requireAuth = require('../middleware/auth');
 const router   = express.Router();
-router.use(requireAuth);
+// router.use(requireAuth);
 
 const { runResearchAgent }  = require('../agents/research');
 const { runContentAgent }   = require('../agents/content');
