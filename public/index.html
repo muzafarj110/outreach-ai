@@ -912,12 +912,12 @@ function buildQueueList(){
     </div>`).join('');
 }
 
-function approveMsg(i){
-  const el=document.getElementById('qi-'+i); if(!el) return;
-  el.style.opacity='0.4';
-  el.querySelector('.queue-actions').innerHTML='<span style="color:var(--green);font-size:12px;font-weight:700">✓ Sent via WhatsApp</span>';
-  addLog(`Message approved & sent: ${QUEUE[i].name}`,'green');
-}
+
+
+
+
+
+
 function skipMsg(i){
   const el=document.getElementById('qi-'+i); if(!el) return;
   el.style.opacity='0.3';
