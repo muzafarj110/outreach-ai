@@ -13,7 +13,7 @@ const CHANNEL_MAP = {
 
 router.post('/post', async (req, res) => {
   try {
-    const { text, channel } = req.body;
+const { text, channel, imageUrl, language } = req.body;
     if (!text || !channel) return res.status(400).json({ error: 'text and channel required' });
 
     const channelId = CHANNEL_MAP[channel.toLowerCase()];
@@ -24,8 +24,9 @@ router.post('/post', async (req, res) => {
         createIdea(input: {
           organizationId: "${ORG_ID}",
           content: {
-            title: "OutreachAI Generated Post",
-            text: ${JSON.stringify(text)}
+            title: "OutreachAI Post (${language || 'EN'})",
+            text: ${JSON.stringify(text)},
+            media: { url: "${imageUrl || ''}" }
           }
         }) {
           ... on Idea {

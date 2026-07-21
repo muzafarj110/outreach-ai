@@ -1103,12 +1103,24 @@ async function generateContent(){
 function sendToBuffer(){
   const txt=document.getElementById("content-text");
   if(!txt||!txt.textContent.trim()){alert("Generate content first.");return;}
+  const content=txt.textContent;
+  const isAlbanian=content.includes("ë")||content.includes("ç")||content.includes("rezervime")||content.includes("Përshëndetje");
+  const lang=isAlbanian?"AL":"EN";
+  const imageUrl=window.location.origin+"/pitch_"+lang+".jpeg";
   const channel=document.getElementById("sel-type")?.value?.toLowerCase().includes("instagram")?"instagram":document.getElementById("sel-type")?.value?.toLowerCase().includes("facebook")?"facebook":"linkedin";
-  fetch("/api/buffer/post",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:txt.textContent,channel:channel})})
+  fetch("/api/buffer/post",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:content,channel:channel,imageUrl:imageUrl,language:lang})})
   .then(r=>r.json())
-  .then(d=>alert(d.success?"✅ Sent to Buffer!":"❌ Error: "+d.error))
+  .then(d=>alert(d.success?"✅ Sent tor ("+lang+")!":"❌ Error: "+d.error))
   .catch(e=>alert("Error: "+e.message));
 }
+
+
+
+
+
+
+
+
 function exportLeads(){
   const csv=['Business,Country,City,Category,Score,Status,Last Action',...LEADS.map(l=>`${l.name},${l.country},${l.city},${l.category},${l.score},${l.status},"${l.last}"`)].join('\n');
   const a=document.createElement('a');
