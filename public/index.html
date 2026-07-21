@@ -503,7 +503,7 @@ select.form-input option{background:var(--card)}
       <button class="btn btn-primary" onclick="generateContent()">✨ Generate with Claude</button>
     </div>
     <div class="card" id="content-output" style="display:none">
-      <div class="card-head"><span class="card-label">Generated Content</span><button class="btn btn-green" style="font-size:11px;padding:4px 10px">→ Send to Buffer</button></div>
+      <div class="card-head"><span class="card-label">Generated Content</span><button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="sendToBuffer()">→ Send to Buffer</button></div>
       <div id="content-text" style="background:var(--surface);border-radius:var(--r-sm);padding:14px;font-size:13px;color:var(--grey);line-height:1.7;border:1px solid var(--border)"></div>
     </div>
   </div>
@@ -1100,6 +1100,15 @@ async function generateContent(){
 }
 
 // ─── EXPORT ──────────────────────────────────────────────────────────────
+function sendToBuffer(){
+  const txt=document.getElementById("content-text");
+  if(!txt||!txt.textContent.trim()){alert("Generate content first.");return;}
+  const channel=document.getElementById("sel-type")?.value?.toLowerCase().includes("instagram")?"instagram":document.getElementById("sel-type")?.value?.toLowerCase().includes("facebook")?"facebook":"linkedin";
+  fetch("/api/buffer/post",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:txt.textContent,channel:channel})})
+  .then(r=>r.json())
+  .then(d=>alert(d.success?"✅ Sent to Buffer!":"❌ Error: "+d.error))
+  .catch(e=>alert("Error: "+e.message));
+}
 function exportLeads(){
   const csv=['Business,Country,City,Category,Score,Status,Last Action',...LEADS.map(l=>`${l.name},${l.country},${l.city},${l.category},${l.score},${l.status},"${l.last}"`)].join('\n');
   const a=document.createElement('a');

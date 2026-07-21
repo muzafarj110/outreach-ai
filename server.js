@@ -72,6 +72,7 @@ app.use('/api/content',  require('./routes/content'));
 app.use('/api/leads',    require('./routes/leads'));
 app.use('/api/agents',   require('./routes/agents'));
 app.use('/api/report',   require('./routes/report'));
+app.use('/api/buffer',   require('./routes/buffer'));
 
 // ─── HEALTH CHECK ─────────────────────────────────
 // Railway pings this to confirm your app is alive
