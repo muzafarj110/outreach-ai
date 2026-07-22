@@ -500,7 +500,7 @@ select.form-input option{background:var(--card)}
           <select id="sel-language" class="form-input"><option>Albanian</option><option>English</option><option>Portuguese</option><option>Spanish</option></select>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="generateContent()">✨ Generate with Claude</button>
+      <div class="grid-2" style="margin-bottom:12px"><div class="form-group"><label class="form-label">Business Name (optional)</label><input id="inp-business" class="form-input" placeholder="e.g. Saranda Beach Hotel"/></div><div class="form-group"><label class="form-label">City (optional)</label><input id="inp-city" class="form-input" placeholder="e.g. Saranda"/></div></div><button class="btn btn-primary" onclick="generateContent()">✨ Generate with Claude</button>
     </div>
     <div class="card" id="content-output" style="display:none">
       <div class="card-head"><span class="card-label">Generated Content</span><button class="btn btn-green" style="font-size:11px;padding:4px 10px" onclick="sendToBuffer()">→ Send to Buffer</button></div>
@@ -1079,6 +1079,8 @@ async function generateContent(){
     const contentType = document.getElementById("sel-type").value;
     const category = document.getElementById("sel-category").value;
     const language = document.getElementById("sel-language").value;
+    const businessName = document.getElementById("inp-business")?.value||"";
+    const city = document.getElementById("inp-city")?.value||"";
     const res=await fetch("/api/content/generate",{
       method:"POST",
       headers:{
@@ -1090,7 +1092,7 @@ async function generateContent(){
         contentType:contentType,
         category:category,
         language:language,
-        businessName:"Saranda Guesthouse",
+        businessName:businessName||"Saranda Guesthouse",
         city:"Saranda"
       })
     });
