@@ -1137,7 +1137,9 @@ async function generateForLead(i){
 function approveRealMsg(i){
   const lead=window._realLeads[i];
   const msg=lead._msg||document.getElementById("qmsg-"+i)?.textContent||"";
-  const phone=(lead.phone||"").replace(/[^0-9]/g,"");
+  const CODES={"Albania":"355","Turkey":"90","Montenegro":"382","Brazil":"55","Georgia":"995"};
+  const code=CODES[lead.country]||"";
+  const phone=code+((lead.phone||"").replace(/[^0-9]/g,"").replace(/^0/,""));
   navigator.clipboard.writeText(msg).catch(()=>{});
   const el=document.getElementById("qi-"+i);
   el.style.opacity="0.4";
