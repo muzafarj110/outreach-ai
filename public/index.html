@@ -890,26 +890,17 @@ function buildPipeline(){
 }
 
 // ─── QUEUE ────────────────────────────────────────────────────────────────
-function buildQueueList(){
-  const el=document.getElementById('queue-list'); if(!el) return;
-  el.innerHTML=QUEUE.map((q,i)=>`
-    <div class="queue-item" id="qi-${i}">
-      <div class="queue-avatar">${q.icon}</div>
-      <div class="queue-body">
-        <div class="queue-meta">
-          <span class="queue-name">${q.name}</span>
-          <span class="flag-sm">${q.flag}</span>
-          <span class="queue-city">${q.city}</span>
-          <span class="status-pill new" style="font-size:10px">${q.channel}</span>
-        </div>
-        <div class="queue-msg">${q.msg}</div>
-        <div class="queue-actions">
-          <button class="btn btn-green" onclick="approveMsg(${i})">✓ Approve & Send</button>
-          <button class="btn btn-ghost" onclick="editMsg(${i})">✏ Edit</button>
-          <button class="btn btn-red" onclick="skipMsg(${i})">✕ Skip</button>
-        </div>
-      </div>
-    </div>`).join('');
+async function buildQueueList(){
+  const el=document.getElementById("queue-list"); if(!el) return;
+  el.innerHTML="<div style=\"padding:20px;color:var(--grey)\">Loading real leads...</div>";
+  try{
+    const res=await fetch("/api/leads?status=new&limit=20");
+    const data=await res.json();
+    const leads=data.leads||[];
+    if(!leads.length){el.innerHTML="<div style=\"padding:20px;color:var(--grey)\">No new leads.</div>";return;}
+    el.innerHTML=leads.map((l,i)=>`<div class="queue-item" id="qi-${i}"><div class="queue-avatar">🏨</div><div class="queue-body"><div class="queue-meta"><span class="queue-name">${l.name}</span><span class="queue-city">${l.city}, ${l.country}</span><span class="status-pill new" style="font-size:10px">⭐${l.rating||"?"} Score:${l.score}</span></div><div class="queue-msg" id="qmsg-${i}" style="color:var(--grey);font-size:12px">${l.ph"📞 "+l.phone:""} ${l.website?"🌐 "+l.website:""}</div><div class="queue-actions"><button class="btn btn-green" onclick="approveRealMsg(${i})">✓ Approve & Send</button><button class="btn btn-ghost" onclick="generateForLead(${i})">✨ Generate Message</button><button class="btn btn-red" onclick="skipRealMsg(${i})">✕ Skip</button></div></div></div>`).join("");
+    window._realLeads=leads;
+  }catch(e){el.innerHTML="<div style=\"padding:20px;color:var(--red)\">Error: "+e.message+"</div>";}
 }
 
 
@@ -1132,6 +1123,34 @@ function sendToBuffer(){
 
 
 
+async function generateForLead(i){
+  const lead=window._realLeads[i];
+  const msgEl=document.getElementById("qmsg-"+i);
+  msgEl.textContent="Generating message...";
+  try{
+    const res=await fetch("/api/content/personalise",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lead:{name:lead.name,city:lead.city,country:lead.country,category:lead.category,rating:lead.rating,language:lead.country==="Albania"?"Albanian":"English"}})})
+    const data=await res.json();
+    msgEl.textContent=data.message||"No message generated";
+    lead._msg=data.message;
+  }catch(e){msgEl.textContent="Error: "+e.message;}
+}
+function approveRealMsg(i){
+  const lead=window._realLeads[i];
+  const msg=lead._msg||document.getElementById("qmsg-"+i)?.textContent||"";
+  const phone=(lead.phone||"").replace(/[^0-9]/g,"");
+  navigator.clipboard.writeText(msg).catch(()=>{});
+  const el=document.getElementById("qi-"+i);
+  el.style.opacity="0.4";
+  el.querySelector(".queue-actions").innerHTML="<span style=\"color:var(--green);font-size:12px;font-weight:700\">Copied! Opening WhatsApp...</span>";
+  addLog("Message sent: "+lead.name,"green");
+  fetch("/api/leads/"+lead._id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"contacted",outreach_date:new Date()})});
+  if(phone) window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank");
+}
+function skipRealMsg(i){
+  const el=document.getElementById("qi-"+i); if(!el) return;
+  el.style.opacity="0.3";
+  el.querySelector(".queue-actions").innerHTML="<span style=\"color:var(--lgrey);font-size:12px\">Skipped</span>";
+}
 function exportLeads(){
   const csv=['Business,Country,City,Category,Score,Status,Last Action',...LEADS.map(l=>`${l.name},${l.country},${l.city},${l.category},${l.score},${l.status},"${l.last}"`)].join('\n');
   const a=document.createElement('a');
