@@ -894,7 +894,7 @@ async function buildQueueList(){
   const el=document.getElementById("queue-list"); if(!el) return;
   el.innerHTML="<div style=\"padding:20px;color:var(--grey)\">Loading real leads...</div>";
   try{
-    const res=await fetch("/api/leads?status=new&limit=20");
+    const res=await fetch("/api/leads?status=new&limit=20&country=Albania");
     const data=await res.json();
     const leads=data.leads||[];
     if(!leads.length){el.innerHTML="<div style=\"padding:20px;color:var(--grey)\">No new leads.</div>";return;}
