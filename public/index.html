@@ -489,7 +489,7 @@ select.form-input option{background:var(--card)}
         </div>
         <div class="form-group">
           <label class="form-label">Content Type</label>
-          <select id="sel-type" class="form-input"><option>Instagram Caption</option><option>TikTok Script</option><option>FB Group Post</option><option>WhatsApp DM</option></select>
+          <select id="sel-type" class="form-input"><option>Instagram Caption</option><option>TikTok Script</option><option>FB Group Post</option><option>WhatsApp DM</option><option>Instagram DM</option></select>
         </div>
         <div class="form-group">
           <label class="form-label">Business Category</label>
@@ -898,7 +898,7 @@ async function buildQueueList(){
     const data=await res.json();
     const leads=data.leads||[];
     if(!leads.length){el.innerHTML="<div style=\"padding:20px;color:var(--grey)\">No new leads.</div>";return;}
-    el.innerHTML=leads.map((l,i)=>`<div class="queue-item" id="qi-${i}"><div class="queue-avatar">🏨</div><div class="queue-body"><div class="queue-meta"><span class="queue-name">${l.name}</span><span class="queue-city">${l.city}, ${l.country}</span><span class="status-pill new" style="font-size:10px">⭐${l.rating||"?"} Score:${l.score}</span></div><div class="queue-msg" id="qmsg-${i}" style="color:var(--grey);font-size:12px">${l.phone?"📞 "+l.phone:""} ${l.website?"🌐 "+l.website:""}</div><div class="queue-actions"><button class="btn btn-green" onclick="approveRealMsg(${i})">✓ Approve & Send</button><button class="btn btn-ghost" onclick="generateForLead(${i})">✨ Generate Message</button><button class="btn btn-red" onclick="skipRealMsg(${i})">✕ Skip</button></div></div></div>`).join("");
+    el.innerHTML=leads.map((l,i)=>`<div class="queue-item" id="qi-${i}"><div class="queue-avatar">🏨</div><div class="queue-body"><div class="queue-meta"><span class="queue-name">${l.name}</span><span class="queue-city">${l.city}, ${l.country}</span><span class="status-pill new" style="font-size:10px">⭐${l.rating||"?"} Score:${l.score}</span></div><div class="queue-msg" id="qmsg-${i}" style="color:var(--grey);font-size:12px">${l.phone?"Phone: "+l.phone:""} ${l.website?"Web: "+l.website:""}</div><div class="queue-actions"><button class="btn btn-green" onclick="approveRealMsg(${i})">✓ Approve & Send</button><button class="btn btn-ghost" onclick="generateForLead(${i})">✨ Generate Message</button><button class="btn btn-red" onclick="skipRealMsg(${i})">✕ Skip</button></div></div></div>`).join("");
     window._realLeads=leads;
   }catch(e){el.innerHTML="<div style=\"padding:20px;color:var(--red)\">Error: "+e.message+"</div>";}
 }

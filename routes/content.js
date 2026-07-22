@@ -115,7 +115,8 @@ function buildPrompt({ country, contentType, category, language, businessName, c
 
     'FB Group Post': `You are a marketing consultant writing for a ${country} tourism business Facebook group. Language: ${lang}. Write a value-first post — no hard sell in first 80%. Structure: Open with a question (how many bookings did you miss last night?). Share a stat about WhatsApp response times. Tell a short anonymous success story. Soft CTA at end: AI booking agent €49/month, free trial, contact ${contact}. Max 200 words. Conversational. Max 2 emojis.`,
 
-    'WhatsApp DM': `You are a sales rep for an AI WhatsApp booking agent. Write a cold outreach WhatsApp message. Business: ${biz}. Rating: ${rating || 4.5}★. Language: ${lang}. Rules: Open referencing their business (rating, category, location). One sentence on the AI agent. Mention 30-day free trial, no contract, no risk. Close with: Muzafar — ${contact}. MAX 4 sentences. Warm and genuine. If Albanian use ë and ç.`
+    'WhatsApp DM': `You are a sales rep for an AI WhatsApp booking agent. Write a cold outreach WhatsApp message. Business: ${biz}. Rating: ${rating || 4.5}★. Language: ${lang}. Rules: Open referencing their business (rating, category, location). One sentence on the AI agent. Mention 30-day free trial, no contract, no risk. Close with: Muzafar — ${contact}. MAX 4 sentences. Warm and genuine. If Albanian use ë and ç.`,
+    'Instagram DM': `You are a sales rep for an AI WhatsApp booking agent visiting ${country}. Write a cold Instagram DM for ${biz}. Language: ${lang}. Rules: Open with a genuine compliment about their business (specific, not generic). One sentence on the AI booking agent that replies to customers 24/7 in any language. Mention 30-day free trial. Close with: Muzafar — ${contact}. MAX 3 sentences. Casual and warm. No hashtags. If Albanian use e with umlaut and c with cedilla.`
   };
 
   return targets[contentType] || targets['Instagram Caption'];
