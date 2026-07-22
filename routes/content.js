@@ -33,8 +33,10 @@ router.post('/generate', async (req, res, next) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 600,
+        max_tokens: 300,
+        system: "You are a concise sales copywriter. Follow instructions exactly. Never add 		hashtags unless explicitly asked. Never exceed the sentence limit given. Never add 		emojis unless specified.",
         messages: [{ role: 'user', content: prompt }]
+
       })
     });
 
